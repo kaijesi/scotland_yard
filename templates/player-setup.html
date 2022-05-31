@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2>You have decided to play in {{ map }}</h2>
+    <h3>Now it's time to set up your players!</h3>
+    <form class="mt-5" action="/start-game" method="post">
+        {% for player in range(players)%}
+        <div class="container mb-3">
+            <h4>Player {{ player + 1 }}</h4>
+            <div class="mb-3">
+                <label class="form-label">Nickname</label>
+                <input name="{{ player + 1 }}" type="text" class="form-control">
+            </div>
+        </div>
+        {% endfor %}
+        <div class="container mb-3">
+            <h4>Who is Mr. X?</h4>
+            <label class="form-label">Select a Player</label>
+            <select name="mrx" class="form-select">
+                {% for player in range(players) %}
+                <option value="{{ player + 1 }}">Player {{ player + 1}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <input name="playercount" type="number" value="{{ players }}" hidden>
+        <input name="selected_map" type="text" value="{{ selected_map }}" hidden>
+        <div class="text-center mb-3">
+            <button type="submit" class="btn btn-warning">Start Game</button>
+        </div>
+    </form>
+</div>
+
+
+{% endblock %}

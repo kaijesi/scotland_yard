@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<div class="container mt-5 text-center">
+    <div class="alert alert-danger" role="alert">
+        Error: {{ message }}
+    </div>
+
+
+{# Different Paths for different error messages #}
+
+{% if error_code == 'running_session' %}
+
+<form action="/session-erase" method="POST">
+<button type="submit" class="btn btn-danger">Delete Running Session</button>
+</form>
+
+{% else %}
+
+{% endif %}
+
+</div>
+{% endblock %}

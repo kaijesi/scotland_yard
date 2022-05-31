@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2>Set up your Game</h2>
+    <form action="/player-setup" method="post">
+        <div class="mb-3">
+            <label class="form-label">Select a Map</label>
+            <select name="mapselector" class="form-select">
+                <option disabled>Select a map</option>
+                <!-- Add a Jinja for loop here to allow for selection of one of multiple maps -->
+                <option value="london">London</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Number of Players</label>
+            <select name="playercount" class="form-select">
+                {% for player in range(4) %}
+                <option value="{{ player + 3 }}">{{ player + 3 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="text-center mb-3">
+            <button type="submit" class="btn btn-warning">Submit</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
