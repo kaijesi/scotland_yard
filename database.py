@@ -83,5 +83,7 @@ def session_info(session_id):
     session_info = cursor.execute('SELECT * FROM session \
                                    LEFT JOIN map \
                                    ON session.map = map.map_id \
-                                   WHERE session.session_id = :session_id')[0]
+                                   WHERE session.session_id = :session_id').fetchall()
+
+                                   # You can cast this as a dict (https://www.programcreek.com/python/example/3926/sqlite3.Row)
     
