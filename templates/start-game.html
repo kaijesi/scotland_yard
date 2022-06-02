@@ -1,3 +1,12 @@
-Start the game
-{{ information }}
-{{ session }}
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+    <h2>Start the Game:</h2>
+    <p>You are playing in {{ selected_map.upper() }}</p>
+    <p>{{ mrx }} is Mister X.</p>
+    <!-- Add form with button to start game (calls game session function in app.py) -->
+
+</div>
+
+{% endblock %}

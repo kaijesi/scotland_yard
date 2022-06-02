@@ -48,7 +48,6 @@ def player_setup():
 def start_game():
     # See if there is already a game session for the current browser session
     if session.get('game_session'):
-        # TO DO: Expand this to allow for discarding the current session and creating a new one
         return render_template('error.html', error_code='running_session', message=error_messages['running_session'])
     # Gather game session and player information from the form
     information = request.form
@@ -64,7 +63,14 @@ def start_game():
     game_session = database.create_game(players.values(), mrx, selected_map)
     session['game_session'] = game_session
 
-    return render_template('start-game.html', information=information, session=session['game_session'])
+    return render_template('start-game.html', selected_map=selected_map, mrx=mrx, session=session['game_session'])
+
+# TO DO: Turn page (shown on every turn)
+#@app.route('/game-session', methods=['POST'])
+#def game_session():
+    # Get session information (define functions for this in database.py)
+    
+
 
 
 
