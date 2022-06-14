@@ -1,6 +1,7 @@
 import os
 from flask import Flask, redirect, render_template, request, url_for, session
 import database
+import helpers
 
 # Set up app object
 app = Flask(__name__)
@@ -67,7 +68,8 @@ def start_game():
 @app.route('/game-session', methods=['POST'])
 def game_session():
     session_info = database.session_info(session.get('game_session'))
-    return render_template('game-session.html', session=session_info)
+    image = session_info['map_url']
+    return render_template('game-session.html', session=session_info, image=image)
 
 
 
