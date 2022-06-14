@@ -1,4 +1,3 @@
-from crypt import methods
 import os
 from flask import Flask, redirect, render_template, request, url_for, session
 import database
@@ -6,7 +5,6 @@ import database
 # Set up app object
 app = Flask(__name__)
 app.secret_key = os.urandom(12).hex()
-app.session_permanent = False
 
 # Set up error messages dict (put this into separate module if it becomes too big)
 error_messages = {'running_session' : 'There is already a running game session!'}
@@ -66,11 +64,10 @@ def start_game():
     return render_template('start-game.html', selected_map=selected_map, mrx=mrx, session=session['game_session'])
 
 # TO DO: Turn page (shown on every turn)
-#@app.route('/game-session', methods=['POST'])
-#def game_session():
-    # Get session information (define functions for this in database.py)
-    
-
+@app.route('/game-session', methods=['POST'])
+def game_session():
+    session_info = database.session_info(session.get('game_session'))
+    return render_template('game-session.html', session=session_info)
 
 
 

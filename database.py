@@ -80,10 +80,10 @@ def session_info(session_id):
     #   Function for this in database.py should return a dict with all values of this joined table
     #   Attention that the possible turns are currently saved in a JSON file, unparse this in the database.py function and return as a separate dict
     cursor = database_open()
-    session_info = cursor.execute('SELECT * FROM session \
+    session_info = dict(cursor.execute('SELECT * FROM session \
                                    LEFT JOIN map \
                                    ON session.map = map.map_id \
-                                   WHERE session.session_id = :session_id').fetchall()
-
-                                   # You can cast this as a dict (https://www.programcreek.com/python/example/3926/sqlite3.Row)
+                                   WHERE session.session_id = :session_id', {'session_id' : session_id}).fetchall()[0])
+    commit_changes()
+    return session_info
     
