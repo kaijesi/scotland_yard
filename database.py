@@ -1,4 +1,3 @@
-import curses
 import random
 import sqlite3
 
