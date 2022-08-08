@@ -1,3 +1,4 @@
+import curses
 import random
 import sqlite3
 
@@ -21,8 +22,8 @@ def create_game(players, mrx, selected_map):
     # Find the map_id for the selected map
     map_id = int(cursor.execute('SELECT map_id FROM map WHERE name = :selected_map', {'selected_map' : selected_map}).fetchall()[0][0])
     # Create the session with the selected map
-    cursor.execute('INSERT INTO session (playercount, turn, status, map, mrx)\
-                    VALUES (:playercount, 1, "session_running", :map_id, :mrx)',\
+    cursor.execute('INSERT INTO session (playercount, turn, status, map, mrx, player_turn)\
+                    VALUES (:playercount, 1, "session_running", :map_id, :mrx, 1)',\
                     {'playercount' : len(players), 'map_id' : map_id, 'mrx' : mrx})
     # Get the ID of the session just inserted
     session_id = cursor.lastrowid
@@ -86,4 +87,32 @@ def session_info(session_id):
                                    WHERE session.session_id = :session_id', {'session_id' : session_id}).fetchall()[0])
     commit_changes()
     return session_info
-    
+
+# Function that gets current players in alphabetical order for detectives + mrx as first
+def get_players(session_id):
+    cursor = database_open()
+    player_info = cursor.execute('SELECT * FROM player WHERE session = :session_id ORDER BY nickname ASC', {'session_id' : session_id}).fetchall()
+    commit_changes()
+    return player_info   
+
+# Function that updates the provided field of the session to the provided value
+def session_update(session_id, field, value):
+    cursor = database_open()
+    cursor.execute('UPDATE session SET :field = :value WHERE session_id = :session_id', {'field' : field, 'value' : value, 'session_id' : session_id})
+    commit_changes()
+
+# Function that finds the current move option for a given player in a session
+def get_moves(session_id, player):
+    cursor = database_open()
+    # Find the player's current position
+    players = get_players(session_id)
+    for player in players:
+        dict(player)
+        if player['nickname'] == player:
+            current_position = player['position']
+    # TO DO (make this function actually return not just the JSON but the current options): Get the JSON move map for the current session's map
+    current_map = dict(cursor.execute('SELECT map FROM session WHERE session_id = :session_id', {'session_id' : session_id}).fetchall()[0])
+    map_id = current_map['map']
+    json = dict(cursor.execute('SELECT json FROM map WHERE map_id = :map_id', {'map_id' : map_id}).fetchall()[0])
+    # TO DO: Modify this to actually do what the function says instead of giving the raw JSON (use helpers.py to parse out the JSON)
+    return json
