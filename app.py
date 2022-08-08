@@ -67,9 +67,28 @@ def start_game():
 # TO DO: Turn page (shown on every turn)
 @app.route('/game-session', methods=['POST'])
 def game_session():
+    # Get info about session
     session_info = database.session_info(session.get('game_session'))
     image = session_info['map_url']
-    return render_template('game-session.html', session=session_info, image=image)
+    session_id = session_info['session_id']
+    # Get info about players (as dict for easier further usage)
+    players = database.get_players(session_id)
+    for player in players:
+        player = dict(player)
+    # Find out if the current turn is over, if so, initiate next turn by increasing turn count and setting player turn back to 1
+    if session_info['player_turn'] == session_info['playercount'] + 1:
+        database.session_update(session_id, 'turn', session_info['turn'] + 1)
+        database.session_update(session_id, 'player_turn', 1)
+        return redirect(url_for('game-session'))
+    # TO DO: Find out whose turn it is (1 = mrx, other players alphabetically)
+    if session_info['player_turn'] == 1:
+        current_player = session_info['mrx']
+
+    # Find out which move options the current player has
+    move_options = database.get_moves(session_id, current_player)
+    
+    # Render the current playing field
+    return render_template('game-session.html', session_info=session_info, image=image, players=players, current_player=current_player, move_options=move_options)
 
 
 
