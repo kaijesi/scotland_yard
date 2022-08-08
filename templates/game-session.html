@@ -4,19 +4,25 @@
 
 <div class="container-lg mt-5 text-center">
     <div class="row">
-        <h2>Turn #TURN COUNT</h2>
-        <h3>Player NAME, make your move</h3>
+        <h2>Turn {{ session_info['turn'] }}</h2>
+        <h3>{{ current_player }}, make your move</h3>
     </div>
     <div class="row">   
         <div class="col">
-            Column
+            <h3>Current Player Positions:</h3>
+            {% for player in players%}
+                <div class="alert alert-warning" role="alert">
+                    <p>{{ player['nickname'] }} is at position: <b>{{ player['position'] }}</b></p>
+                </div>
+            {% endfor %}
         </div>
         <div class="col-6">
             
             <img src="{{ image }}" class="img-fluid" alt="Game Map">
         </div>
         <div class="col">
-            Column
+            <h3>Your Move Options:</h3>
+            <p>{{ move_options }}</p>
         </div>
     </div>
 </div>
