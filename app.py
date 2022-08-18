@@ -104,7 +104,6 @@ def game_session():
 
     # Find out which move options the current player has
     move_options = database.get_moves(session_id, current_player_id)
-    
     # Render the current playing field
     return render_template('game-session.html', session_info=session_info, image=image, players=players, current_player=current_player, move_options=move_options)
 
