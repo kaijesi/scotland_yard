@@ -12,7 +12,7 @@
             <h3>Current Player Positions:</h3>
             {# Only show player information for non-mrx players or mrx during the correct turns and only while it it mrx's turn#}
             {% for player in players%}
-                {% if (player['mrx']==1 and session_info['turn'] in [3,8,13,18,24] and session_info['player_turn'] == 1) or player['mrx']==0 %}
+                {% if (player['mrx']==1 and session_info['turn'] in [3,8,13,18,24]) or player['mrx']==0 or session_info['player_turn'] == 1%}
                     {% if player['mrx']==1 %}
                     <div class="alert alert-danger" role="alert">
                         <p>{{ player['nickname'] }} (Mr. X) is at position: <b>{{ player['position'] }}</b></p>
@@ -31,7 +31,34 @@
         </div>
         <div class="col">
             <h3>Your Move Options:</h3>
-            <p>{{ move_options }}</p>
+
+            {%if move_options['metro']|length > 0 %}
+                <p>Metro:</p>
+                {% for metro_option in move_options['metro'] %}
+                {{ metro_option }}</br>
+                {% endfor %}
+            {% endif %}
+
+            {%if move_options['bus']|length > 0 %}
+                <p>Bus:</p>
+                {% for bus_option in move_options['bus'] %}
+                {{ bus_option }}</br>
+                {% endfor %}
+            {% endif %}
+
+            {% if move_options['taxi']|length > 0 %}
+                <p>Taxi:</p>
+                {% for taxi_option in move_options['taxi'] %}
+                {{ taxi_option }}</br>
+                {% endfor %}
+            {% endif %}
+
+            {% if session_info['player_turn'] == 1 and move_options['ferry']|length > 0 %}
+                <p>Ferry:</p>
+                {% for ferry_option in move_options['ferry'] %}
+                {{ ferry_option }}</br>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 </div>
