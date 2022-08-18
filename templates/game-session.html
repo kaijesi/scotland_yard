@@ -10,10 +10,19 @@
     <div class="row">   
         <div class="col">
             <h3>Current Player Positions:</h3>
+            {# Only show player information for non-mrx players or mrx during the correct turns and only while it it mrx's turn#}
             {% for player in players%}
-                <div class="alert alert-warning" role="alert">
-                    <p>{{ player['nickname'] }} is at position: <b>{{ player['position'] }}</b></p>
-                </div>
+                {% if (player['mrx']==1 and session_info['turn'] in [3,8,13,18,24] and session_info['player_turn'] == 1) or player['mrx']==0 %}
+                    {% if player['mrx']==1 %}
+                    <div class="alert alert-danger" role="alert">
+                        <p>{{ player['nickname'] }} (Mr. X) is at position: <b>{{ player['position'] }}</b></p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning" role="alert">
+                        <p>{{ player['nickname'] }} is at position: <b>{{ player['position'] }}</b></p>
+                    </div>
+                    {% endif %}
+                {% endif %}
             {% endfor %}
         </div>
         <div class="col-6">
