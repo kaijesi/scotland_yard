@@ -1,4 +1,5 @@
 import os
+from re import I
 from flask import Flask, redirect, render_template, request, url_for, session
 import database
 import helpers
@@ -54,6 +55,7 @@ def start_game():
     players = dict()
     for i in range(int(information.get('playercount'))):
         players[i + 1] = information.get(str(i + 1))
+    # TO DO: Don't allow duplicate names
     # Get mrx name
     mrx = players[int(information.get('mrx'))]
     # Get map
@@ -75,17 +77,33 @@ def game_session():
     players = database.get_players(session_id)
     for player in players:
         player = dict(player)
+    # Sort the players, mrx gets 1, other players get following numbers based on their IDs ascending
+    police_players = [player for player in players if player['mrx']==0]
+    police_player_ids = sorted([player['player_id'] for player in police_players])
+    player_sorting = dict()
+    i = 2
+    for id in police_player_ids:
+        player_sorting[i] = id
+        i += 1
     # Find out if the current turn is over, if so, initiate next turn by increasing turn count and setting player turn back to 1
     if session_info['player_turn'] == session_info['playercount'] + 1:
         database.session_update(session_id, 'turn', session_info['turn'] + 1)
         database.session_update(session_id, 'player_turn', 1)
         return redirect(url_for('game-session'))
-    # TO DO: Find out whose turn it is (1 = mrx, other players alphabetically)
+    # Find out whose turn it is (1 = mrx, other players ascending by player id)
+    # If it's player turn 1 within overall turn, mrx needs to move
     if session_info['player_turn'] == 1:
         current_player = session_info['mrx']
+        current_player_id = [player for player in players if player['mrx']==1][0]['player_id']
+    # For all other turns, identify who's turn it is based on the player_sorting dict which stores the player ids
+    else:
+        current_player_id = player_sorting[session_info['player_turn']]
+        for player in players:
+            if player['player_id'] == current_player_id:
+                current_player = player['nickname']
 
     # Find out which move options the current player has
-    move_options = database.get_moves(session_id, current_player)
+    move_options = database.get_moves(session_id, current_player_id)
     
     # Render the current playing field
     return render_template('game-session.html', session_info=session_info, image=image, players=players, current_player=current_player, move_options=move_options)
