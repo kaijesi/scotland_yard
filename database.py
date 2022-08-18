@@ -117,6 +117,5 @@ def get_moves(session_id, player_id):
     map_id = current_map['map']
     json_string = dict(cursor.execute('SELECT json FROM map WHERE map_id = :map_id', {'map_id' : map_id}).fetchall()[0])['json']
     # Gets the move options from the given map JSON and the player's position
-    move_options = [position_options for position_options in json.loads(json_string) if position_options['position'] == str(current_position)]
-    commit_changes()
+    move_options = [position_options for position_options in json.loads(json_string) if position_options['position'] == str(current_position)][0]
     return move_options
