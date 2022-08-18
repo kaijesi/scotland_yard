@@ -1,5 +1,6 @@
 import random
 import sqlite3
+import json
 
 """ Collection of functions to interact with the game's database, e.g. creating/deleting new game sessions """
 # Function that returns a usable cursor for the database
@@ -97,21 +98,25 @@ def get_players(session_id):
 # Function that updates the provided field of the session to the provided value
 def session_update(session_id, field, value):
     cursor = database_open()
-    cursor.execute('UPDATE session SET :field = :value WHERE session_id = :session_id', {'field' : field, 'value' : value, 'session_id' : session_id})
+    query = 'UPDATE session SET ' + str(field) + ' = ' + str(value) + ' WHERE session_id = ' + str(session_id)
+    cursor.execute(query)
     commit_changes()
 
 # Function that finds the current move option for a given player in a session
-def get_moves(session_id, player):
+def get_moves(session_id, player_id):
     cursor = database_open()
     # Find the player's current position
     players = get_players(session_id)
+    current_position = None
     for player in players:
         dict(player)
-        if player['nickname'] == player:
+        if player['player_id'] == player_id:
             current_position = player['position']
-    # TO DO (make this function actually return not just the JSON but the current options): Get the JSON move map for the current session's map
+    # Get the JSON move map for the current session's map
     current_map = dict(cursor.execute('SELECT map FROM session WHERE session_id = :session_id', {'session_id' : session_id}).fetchall()[0])
     map_id = current_map['map']
-    json = dict(cursor.execute('SELECT json FROM map WHERE map_id = :map_id', {'map_id' : map_id}).fetchall()[0])
-    # TO DO: Modify this to actually do what the function says instead of giving the raw JSON (use helpers.py to parse out the JSON)
-    return json
+    json_string = dict(cursor.execute('SELECT json FROM map WHERE map_id = :map_id', {'map_id' : map_id}).fetchall()[0])['json']
+    # Gets the move options from the given map JSON and the player's position
+    move_options = [position_options for position_options in json.loads(json_string) if position_options['position'] == str(current_position)]
+    commit_changes()
+    return move_options
