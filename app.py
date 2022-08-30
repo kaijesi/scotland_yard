@@ -1,3 +1,4 @@
+from crypt import methods
 import os
 from re import I
 from flask import Flask, redirect, render_template, request, url_for, session
@@ -104,11 +105,33 @@ def game_session():
 
     # Find out which move options the current player has
     move_options = database.get_moves(session_id, current_player_id)
+    # TO DO: Add the tickets logic to this, meaning only show the police players options for which they still have tickets left
+    # TO DO: Test this function!
+    # No two police players can be on the same field (but they can with mrx, ending the game)
+    player_positions = [player['position'] for player in players if player['mrx']==0]
+    for transport_method in ('metro','bus','taxi','ferry'):
+        for item in move_options[transport_method]:
+            if item in player_positions:
+                move_options[transport_method].remove(item)
     # Render the current playing field
-    return render_template('game-session.html', session_info=session_info, image=image, players=players, current_player=current_player, move_options=move_options)
+    return render_template('game-session.html', session_info=session_info, image=image, players=players, current_player_id=current_player_id, current_player=current_player, move_options=move_options)
 
-
-
-
-
+# Process the move of a player when one of the move options is selected
+@app.route('/process_turn', methods=['POST'])
+def process_turn():
+    move_selection = request.form
+    print(move_selection)
+    player_id = move_selection.get('current_player_id')
+    mode_of_transport = move_selection.get('mode_of_transport')
+    # Move the player to the position
+    database.player_update(player_id,'position',move_selection.get('selected_move'))
+    # Deduct the ticket from the player's account
+    # Get current value for this player
+    current_tickets = [dict(player) for player in database.get_players(move_selection.get('session_id')) if player['player_id']==int(player_id)][0].get(mode_of_transport)
+    print(mode_of_transport, current_tickets)
+    # database.player_update(player_id,mode_of_transport,)
+    # Check for mrx lose conditions (are mrx and one of the police players on one field OR are all move options for mrx taken by police players)
+    # Check for mrx win conditions (has the last player turn in round 24 been reached)
+    # Update the session info so it becomes the next player's turn
+    return redirect(url_for('game_session'), code=307)
 
