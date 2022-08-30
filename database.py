@@ -88,12 +88,19 @@ def session_info(session_id):
     commit_changes()
     return session_info
 
-# Function that gets current players in alphabetical order for detectives + mrx as first
+# Function that gets current players
 def get_players(session_id):
     cursor = database_open()
     player_info = cursor.execute('SELECT * FROM player WHERE session = :session_id ORDER BY nickname ASC', {'session_id' : session_id}).fetchall()
     commit_changes()
-    return player_info   
+    return player_info 
+
+# Function that updates the provided field of the player to the provided value
+def player_update(player_id, field, value):
+    cursor = database_open()
+    query = 'UPDATE player SET ' + str(field) + ' = ' + str(value) + ' WHERE player_id = ' + str(player_id)
+    cursor.execute(query)
+    commit_changes()  
 
 # Function that updates the provided field of the session to the provided value
 def session_update(session_id, field, value):
