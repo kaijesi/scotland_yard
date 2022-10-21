@@ -32,9 +32,6 @@
         <div class="col">
             <form action="/process_turn" method="post">
                 <h3>Your Move Options:</h3>
-
-                <!-- TO DO: Make this multiple forms so only the relevant mode of transport hidden option is transmitted -->
-
                 {%if move_options['metro']|length > 0 %}
                     <h4>Metro:</h4>
                     {% for metro_option in move_options['metro'] %}
@@ -44,8 +41,13 @@
                         <input name="mode_of_transport" type="text" value="metro" hidden>
                     </div>
                     {% endfor %}
-                {% endif %}
+                    <input name="current_player_id" type="number" value="{{ current_player_id }}" hidden>
+                    <input name="session_id" type="number" value="{{ session_info['session_id'] }}" hidden>
+                    <button type="submit" class="btn btn-primary">Make my move!</button>
+                    {% endif %}
+            </form>
 
+            <form action="/process_turn" method="post">
                 {%if move_options['bus']|length > 0 %}
                     <h4>Bus:</h4>
                     {% for bus_option in move_options['bus'] %}
@@ -55,8 +57,13 @@
                         <input name="mode_of_transport" type="text" value="bus" hidden>
                     </div>
                     {% endfor %}
-                {% endif %}
+                    <input name="current_player_id" type="number" value="{{ current_player_id }}" hidden>
+                    <input name="session_id" type="number" value="{{ session_info['session_id'] }}" hidden>
+                    <button type="submit" class="btn btn-primary">Make my move!</button>
+                    {% endif %}
+            </form>
 
+            <form action="/process_turn" method="post">
                 {% if move_options['taxi']|length > 0 %}
                     <h4>Taxi:</h4>
                     {% for taxi_option in move_options['taxi'] %}
@@ -66,21 +73,26 @@
                         <label class="form-check-label" for="taxi">{{ taxi_option }}</label>
                     </div>
                     {% endfor %}
-                {% endif %}
+                    <input name="current_player_id" type="number" value="{{ current_player_id }}" hidden>
+                    <input name="session_id" type="number" value="{{ session_info['session_id'] }}" hidden>
+                    <button type="submit" class="btn btn-primary">Make my move!</button>
+                    {% endif %}
+            </form>
 
+            <form action="/process_turn" method="post">
                 {% if session_info['player_turn'] == 1 and move_options['ferry']|length > 0 %}
-                    <h4>Ferry:</h4>
-                    {% for ferry_option in move_options['ferry'] %}
-                    <div class="alert alert-dark" role="alert">
-                        <input class="form-check-input" type="radio" name="selected_move" id="ferry" value="{{ ferry_option }}">
-                        <input name="mode_of_transport" type="text" value="hidden_ferry" hidden>
-                        <label class="form-check-label" for="ferry">{{ ferry_option }}</label>
-                    </div>
-                    {% endfor %}
-                {% endif %}
+                <h4>Ferry:</h4>
+                {% for ferry_option in move_options['ferry'] %}
+                <div class="alert alert-dark" role="alert">
+                    <input class="form-check-input" type="radio" name="selected_move" id="ferry" value="{{ ferry_option }}">
+                    <input name="mode_of_transport" type="text" value="hidden_ferry" hidden>
+                    <label class="form-check-label" for="ferry">{{ ferry_option }}</label>
+                </div>
+                {% endfor %}
                 <input name="current_player_id" type="number" value="{{ current_player_id }}" hidden>
                 <input name="session_id" type="number" value="{{ session_info['session_id'] }}" hidden>
                 <button type="submit" class="btn btn-primary">Make my move!</button>
+                {% endif %}
             </form>
         </div>
     </div>
