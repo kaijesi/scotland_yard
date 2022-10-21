@@ -105,25 +105,29 @@ def game_session():
 
     # Find out which move options the current player has
     move_options = database.get_moves(session_id, current_player_id)
-    # TO DO: Add the tickets logic to this, meaning only show the police players options for which they still have tickets left
-    # TO DO: Test this function!
     # No two police players can be on the same field (but they can with mrx, ending the game)
     player_positions = [player['position'] for player in players if player['mrx']==0]
+    remaining_tickets_by_transport_method = {}
+    for transport_method in ('metro','bus','taxi','hidden_ferry'):
+        # Find out if a player ran out of ticket, then remove these options
+        remaining_tickets = database.get_player(current_player_id)[transport_method]
+        remaining_tickets_by_transport_method[transport_method] = remaining_tickets
+        if remaining_tickets == 0:
+            move_options[transport_method] = []
     if database.get_player(current_player_id)['mrx'] == False:
-        for transport_method in ('metro','bus','taxi','ferry'):
-            # If the player has multiple options to move and only some of them are blocked, continue the turn
-            for item in move_options[transport_method]:
-                if item in player_positions:
-                    move_options[transport_method].remove(item)
-            # If after the removing, the player has no more options to move, skip the turn
-            if len(move_options) == 0:
-                # Update the session info so it becomes the next player's turn
-                turncount = database.session_info(session_id)['player_turn']
-                database.session_update(session_id, 'player_turn', turncount+1)
-                # Render a new game session page
-                return redirect(url_for('game_session'), code=307)
+        # Find out if a police player's move options are blocked by other police players, then remove these options
+        for item in move_options[transport_method]:
+            if item in player_positions:
+                move_options[transport_method].remove(item)
+    # If after the removing, the player has no more options to move, skip the turn
+    if len(move_options) == 0:
+        # Update the session info so it becomes the next player's turn
+        turncount = database.session_info(session_id)['player_turn']
+        database.session_update(session_id, 'player_turn', turncount+1)
+        # Render a new game session page
+        return redirect(url_for('game_session'), code=307)
     # Render the current playing field
-    return render_template('game-session.html', session_info=session_info, image=image, players=players, current_player_id=current_player_id, current_player=current_player, move_options=move_options)
+    return render_template('game-session.html', session_info=session_info, image=image, players=players, current_player_id=current_player_id, current_player=current_player, move_options=move_options, remaining_tickets_by_transport_method=remaining_tickets_by_transport_method)
 
 # Process the move of a player when one of the move options is selected
 @app.route('/process_turn', methods=['POST'])
@@ -132,6 +136,9 @@ def process_turn():
     session_id = move_selection.get('session_id')
     player_id = move_selection.get('current_player_id')
     mode_of_transport = move_selection.get('mode_of_transport')
+    # If player is mrx, update the method of transport indicator, which is shown to the other players
+    if database.get_player(player_id)['mrx']:
+        database.session_update(session_id, 'mrx_last_transport', '\'' + mode_of_transport.capitalize() + '\'')
     # Move the player to the position
     database.player_update(player_id,'position',move_selection.get('selected_move'))
     # Get current value for this player
