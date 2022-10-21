@@ -3,8 +3,7 @@
 {% block content %}
 
 <div class="container mt-5">
-    <h2>You have decided to play in {{ map }}</h2>
-    <h3>Now it's time to set up your players!</h3>
+    <h2>Now it's time to set up your players!</h2>
     <form class="mt-5" action="/start-game" method="post">
         {% for player in range(players)%}
         <div class="container mb-3">
