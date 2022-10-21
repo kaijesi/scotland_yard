@@ -1,6 +1,8 @@
+import code
 from crypt import methods
 import os
 from re import I
+from shutil import move
 from flask import Flask, redirect, render_template, request, url_for, session
 import database
 import helpers
@@ -40,7 +42,6 @@ def session_erase():
 def player_setup():
     # Gather game session information from the form
     selected_map = request.form.get('mapselector').capitalize()
-    # TO DO: Validation, find out if a map with this name exists
     players = int(request.form.get('playercount'))
     return render_template('player-setup.html', selected_map=selected_map, players=players)
 
@@ -56,7 +57,6 @@ def start_game():
     players = dict()
     for i in range(int(information.get('playercount'))):
         players[i + 1] = information.get(str(i + 1))
-    # TO DO: Don't allow duplicate names
     # Get mrx name
     mrx = players[int(information.get('mrx'))]
     # Get map
@@ -67,7 +67,7 @@ def start_game():
 
     return render_template('start-game.html', selected_map=selected_map, mrx=mrx, session=session['game_session'])
 
-# TO DO: Turn page (shown on every turn)
+# Turn page (shown on every turn)
 @app.route('/game-session', methods=['POST'])
 def game_session():
     # Get info about session
@@ -90,7 +90,7 @@ def game_session():
     if session_info['player_turn'] == session_info['playercount'] + 1:
         database.session_update(session_id, 'turn', session_info['turn'] + 1)
         database.session_update(session_id, 'player_turn', 1)
-        return redirect(url_for('game-session'))
+        return redirect(url_for('game_session'), code=307)
     # Find out whose turn it is (1 = mrx, other players ascending by player id)
     # If it's player turn 1 within overall turn, mrx needs to move
     if session_info['player_turn'] == 1:
@@ -109,10 +109,19 @@ def game_session():
     # TO DO: Test this function!
     # No two police players can be on the same field (but they can with mrx, ending the game)
     player_positions = [player['position'] for player in players if player['mrx']==0]
-    for transport_method in ('metro','bus','taxi','ferry'):
-        for item in move_options[transport_method]:
-            if item in player_positions:
-                move_options[transport_method].remove(item)
+    if database.get_player(current_player_id)['mrx'] == False:
+        for transport_method in ('metro','bus','taxi','ferry'):
+            # If the player has multiple options to move and only some of them are blocked, continue the turn
+            for item in move_options[transport_method]:
+                if item in player_positions:
+                    move_options[transport_method].remove(item)
+            # If after the removing, the player has no more options to move, skip the turn
+            if len(move_options) == 0:
+                # Update the session info so it becomes the next player's turn
+                turncount = database.session_info(session_id)['player_turn']
+                database.session_update(session_id, 'player_turn', turncount+1)
+                # Render a new game session page
+                return redirect(url_for('game_session'), code=307)
     # Render the current playing field
     return render_template('game-session.html', session_info=session_info, image=image, players=players, current_player_id=current_player_id, current_player=current_player, move_options=move_options)
 
@@ -120,18 +129,38 @@ def game_session():
 @app.route('/process_turn', methods=['POST'])
 def process_turn():
     move_selection = request.form
-    print(move_selection)
+    session_id = move_selection.get('session_id')
     player_id = move_selection.get('current_player_id')
     mode_of_transport = move_selection.get('mode_of_transport')
     # Move the player to the position
     database.player_update(player_id,'position',move_selection.get('selected_move'))
-    # Deduct the ticket from the player's account
     # Get current value for this player
-    current_tickets = [dict(player) for player in database.get_players(move_selection.get('session_id')) if player['player_id']==int(player_id)][0].get(mode_of_transport)
-    print(mode_of_transport, current_tickets)
-    # database.player_update(player_id,mode_of_transport,)
-    # Check for mrx lose conditions (are mrx and one of the police players on one field OR are all move options for mrx taken by police players)
+    current_tickets = [dict(player) for player in database.get_players(session_id) if player['player_id']==int(player_id)][0].get(mode_of_transport)
+    # Deduct the ticket from the player's account
+    database.player_update(player_id, mode_of_transport, current_tickets-1)
+    # Check for mrx lose conditions (are mrx and one of the police players on one field)
+    mrx_position = [dict(player) for player in database.get_players(session_id) if player['mrx']==True][0].get('position')
+    player_positions = [dict(player).get('position') for player in database.get_players(session_id) if player['mrx']==False]
+    print(mrx_position, player_positions)
+    if mrx_position in player_positions:
+        database.erase_session(session_id)
+        return redirect(url_for('mrx_lost'), code=307)
     # Check for mrx win conditions (has the last player turn in round 24 been reached)
+    if database.session_info(session_id)['turn']==25:
+        database.erase_session(session_id)
+        return redirect(url_for('mrx_won'), code=307)
     # Update the session info so it becomes the next player's turn
+    turncount = database.session_info(session_id)['player_turn']
+    database.session_update(session_id, 'player_turn', turncount+1)
+    # Render a new game session page
     return redirect(url_for('game_session'), code=307)
 
+# Show the MRX lost screen
+@app.route('/mrx-lost', methods=['POST'])
+def mrx_lost():
+    return render_template('mrx-lost.html')
+
+# Show the MRX won screen
+@app.route('/mrx-won', methods=['POST'])
+def mrx_won():
+    return render_template('mrx-won.html')
