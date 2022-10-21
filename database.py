@@ -74,12 +74,6 @@ def erase_session(session_id):
 
 # Function that gets current session information joined with other information
 def session_info(session_id):
-    # For ever turn you need to know:
-    # What is the current session 
-    #   Get this via a WHERE clause using .get('game_session') from the browser session
-    #   Get this also joined with all map information via lookup already
-    #   Function for this in database.py should return a dict with all values of this joined table
-    #   Attention that the possible turns are currently saved in a JSON file, unparse this in the database.py function and return as a separate dict
     cursor = database_open()
     session_info = dict(cursor.execute('SELECT * FROM session \
                                    LEFT JOIN map \
@@ -95,10 +89,17 @@ def get_players(session_id):
     commit_changes()
     return player_info 
 
+# Function that gets a specific player's information
+def get_player(player_id):
+    cursor = database_open()
+    player_info = cursor.execute('SELECT * FROM player WHERE player_id = :player_id', {'player_id' : player_id}).fetchall()[0]
+    return player_info
+
 # Function that updates the provided field of the player to the provided value
 def player_update(player_id, field, value):
     cursor = database_open()
     query = 'UPDATE player SET ' + str(field) + ' = ' + str(value) + ' WHERE player_id = ' + str(player_id)
+    print(query)
     cursor.execute(query)
     commit_changes()  
 
