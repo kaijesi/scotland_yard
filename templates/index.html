@@ -2,6 +2,19 @@
 
 {% block content %}
 
+<div class="container mt-5" style="text-align: justify">
+    <h2>Welcome to "Where is Mr. X?"</h2>
+    <p>This is an online interpretation of the popular board game Scotland Yard, which I've created as my final project for the <a href="https://www.edx.org/cs50">CS50 Course</a>.</p>
+    <h3>The rules:</h3>
+    <p>You select how many players participate in the game. One of the players is designated Mr. X, the others are members of the police.</p>
+    <p>Mr. X can move around the map however they want, using metro, bus, taxi and the ferry. Mr. X's most recently used mode of transport is always revealed to the other players. Their position on the board however, is only revealed during rounds 3,8,13,18 and 24.</p>
+    <p>Police players are meant to use these occasions to catch Mr. X, which happens when one of them steps on the same position as Mr. X. Remember that after Mr. X reveals themselves in a turn, police players can make assumptions about Mr. X's possible route based on the methods of transport (which will always be revealed).</p>
+    <p>The key limitations the police players face is that they have a limited number of tickets to use. They also can not use the ferry!</p>
+    <p>The game ends after 24 rounds with a Mr. X win, unless they were caught before, which means the police wins.</p>
+    <h3>Are you ready to go?</h3>
+    <a href="/session-setup" class="btn btn-warning mr-2" role="button">New Game</a>
+</div>
+
 
 
 
