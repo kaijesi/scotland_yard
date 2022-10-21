@@ -6,6 +6,19 @@
     <div class="row">
         <h2>Turn {{ session_info['turn'] }}</h2>
         <h3>{{ current_player }}, make your move</h3>
+        <div class="col"><h4>Mr. X Last Move: {{ session_info['mrx_last_transport']}}</h4></div>
+        <div class="col"><h4>Remaining Tickets:</h4>
+        {% if session_info['player_turn'] == 1 %}
+        <p>Hidden Ferry: {{ remaining_tickets_by_transport_method['hidden_ferry'] }}</p>
+        {% else %}
+            {% for transport_method in remaining_tickets_by_transport_method %}
+            {% if transport_method != 'hidden_ferry' %}
+            <p>{{ transport_method.replace('_', ' ').capitalize() }}: {{ remaining_tickets_by_transport_method[transport_method] }}</p>
+            {% endif %}
+            {% endfor %}
+        {% endif %}
+        </div>
+
     </div>
     <div class="row">   
         <div class="col">
@@ -33,7 +46,7 @@
             <form action="/process_turn" method="post">
                 <h3>Your Move Options:</h3>
                 {%if move_options['metro']|length > 0 %}
-                    <h4>Metro:</h4>
+                    <h4>Metro{%if session_info['player_turn'] != 1 %} ({{ remaining_tickets_by_transport_method['metro'] }} tickets left) {% endif %}:</h4>
                     {% for metro_option in move_options['metro'] %}
                     <div class="alert alert-danger" role="alert">
                         <input class="form-check-input" type="radio" name="selected_move" id="metro" value="{{ metro_option }}">
@@ -49,7 +62,7 @@
 
             <form action="/process_turn" method="post">
                 {%if move_options['bus']|length > 0 %}
-                    <h4>Bus:</h4>
+                    <h4>Bus{%if session_info['player_turn'] != 1 %} ({{ remaining_tickets_by_transport_method['bus'] }} tickets left) {% endif %}:</h4>
                     {% for bus_option in move_options['bus'] %}
                     <div class="alert alert-info" role="alert">
                         <input class="form-check-input" type="radio" name="selected_move" id="bus" value="{{ bus_option }}">
@@ -65,7 +78,7 @@
 
             <form action="/process_turn" method="post">
                 {% if move_options['taxi']|length > 0 %}
-                    <h4>Taxi:</h4>
+                    <h4>Taxi{%if session_info['player_turn'] != 1 %} ({{ remaining_tickets_by_transport_method['taxi'] }} tickets left) {% endif %}:</h4>
                     {% for taxi_option in move_options['taxi'] %}
                     <div class="alert alert-warning" role="alert">
                         <input class="form-check-input" type="radio" name="selected_move" id="taxi" value="{{ taxi_option }}">
@@ -81,7 +94,7 @@
 
             <form action="/process_turn" method="post">
                 {% if session_info['player_turn'] == 1 and move_options['ferry']|length > 0 %}
-                <h4>Ferry:</h4>
+                <h4>Ferry ({{ remaining_tickets_by_transport_method['hidden_ferry'] }} tickets left):</h4>
                 {% for ferry_option in move_options['ferry'] %}
                 <div class="alert alert-dark" role="alert">
                     <input class="form-check-input" type="radio" name="selected_move" id="ferry" value="{{ ferry_option }}">
